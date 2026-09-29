@@ -1,0 +1,13 @@
+{
+  "expression_id": "all_auto_safety_rating_discount",
+  "version": 1,
+  "jurisdiction": "ALL",
+  "line": "personal_auto",
+  "description": "Vehicle safety discount: synthetic safety rating of 4 or 5 earns 5% off base premium.",
+  "conditions": [
+    {"field": "vehicle.safety_rating", "op": "ge", "value": 4}
+  ],
+  "effect": {"type": "discount", "factor": 0.95, "applies_to": "base_premium",
+             "reason": "VEHICLE_SAFETY"},
+  "metadata": {"author": "hsp-seed", "source_refs": ["req:AZDO-10458"]}
+}

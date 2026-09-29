@@ -1,0 +1,13 @@
+{
+  "expression_id": "all_home_prior_claims_surcharge",
+  "version": 1,
+  "jurisdiction": "ALL",
+  "line": "homeowners",
+  "description": "Loss-history surcharge: two or more claims in 3 years.",
+  "conditions": [
+    {"field": "loss_history.claims_3y", "op": "ge", "value": 2}
+  ],
+  "effect": {"type": "surcharge", "factor": 1.20, "applies_to": "policy_premium",
+             "reason": "PRIOR_CLAIM_FREQUENCY"},
+  "metadata": {"author": "hsp-seed", "source_refs": ["req:AZDO-10526"]}
+}

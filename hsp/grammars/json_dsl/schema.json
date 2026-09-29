@@ -1,0 +1,136 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://hsp.local/grammars/decisioning-expression/1.0.0",
+  "title": "DecisioningExpression",
+  "description": "Structured JSON DSL for insurance decisioning rules. Synthetic grammar; one expression = conditions under which a surcharge, discount, eligibility or pricing-factor decision applies.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["expression_id", "version", "jurisdiction", "line", "conditions", "effect"],
+  "properties": {
+    "expression_id": {
+      "type": "string",
+      "pattern": "^[a-z][a-z0-9_]{1,63}$"
+    },
+    "version": {"type": "integer", "minimum": 1},
+    "jurisdiction": {
+      "type": "string",
+      "pattern": "^(ALL|[A-Z]{2})$",
+      "description": "US state code or ALL"
+    },
+    "line": {
+      "type": "string",
+      "enum": ["personal_auto", "homeowners", "renters", "commercial_auto"]
+    },
+    "description": {"type": "string", "maxLength": 500},
+    "condition_logic": {
+      "type": "string",
+      "enum": ["all", "any"],
+      "default": "all"
+    },
+    "conditions": {
+      "type": "array",
+      "minItems": 1,
+      "maxItems": 20,
+      "items": {"$ref": "#/$defs/condition"}
+    },
+    "effect": {"$ref": "#/$defs/effect"},
+    "metadata": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "author": {"type": "string"},
+        "created": {"type": "string", "format": "date"},
+        "source_refs": {
+          "type": "array",
+          "items": {"type": "string", "pattern": "^(req|reg|ticket):[^\\s]+$"}
+        }
+      }
+    }
+  },
+  "$defs": {
+    "condition": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["field", "op"],
+      "properties": {
+        "field": {
+          "type": "string",
+          "pattern": "^[a-z][a-z0-9_]*(\\.[a-z][a-z0-9_]*)+$"
+        },
+        "op": {
+          "type": "string",
+          "enum": ["eq", "ne", "lt", "le", "gt", "ge", "in", "not_in", "between", "exists", "not_exists"]
+        },
+        "value": true
+      },
+      "allOf": [
+        {
+          "if": {"properties": {"op": {"enum": ["exists", "not_exists"]}}},
+          "then": {"not": {"required": ["value"]}},
+          "else": {"required": ["value"]}
+        },
+        {
+          "if": {"properties": {"op": {"const": "between"}}},
+          "then": {
+            "properties": {
+              "value": {"type": "array", "minItems": 2, "maxItems": 2}
+            }
+          }
+        },
+        {
+          "if": {"properties": {"op": {"enum": ["in", "not_in"]}}},
+          "then": {
+            "properties": {
+              "value": {"type": "array", "minItems": 1}
+            }
+          }
+        }
+      ]
+    },
+    "effect": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["type"],
+      "properties": {
+        "type": {
+          "type": "string",
+          "enum": ["surcharge", "discount", "eligibility", "pricing_factor"]
+        },
+        "factor": {"type": "number", "exclusiveMinimum": 0},
+        "decision": {
+          "type": "string",
+          "enum": ["ELIGIBLE", "INELIGIBLE", "REFERRAL"]
+        },
+        "reason": {"type": "string", "pattern": "^[A-Z][A-Z0-9_]{1,63}$"},
+        "applies_to": {
+          "type": "string",
+          "enum": ["base_premium", "policy_premium", "peril_premium"]
+        }
+      },
+      "allOf": [
+        {
+          "if": {"properties": {"type": {"const": "surcharge"}}},
+          "then": {
+            "required": ["factor"],
+            "properties": {"factor": {"exclusiveMinimum": 1}}
+          }
+        },
+        {
+          "if": {"properties": {"type": {"const": "discount"}}},
+          "then": {
+            "required": ["factor"],
+            "properties": {"factor": {"exclusiveMaximum": 1}}
+          }
+        },
+        {
+          "if": {"properties": {"type": {"const": "pricing_factor"}}},
+          "then": {"required": ["factor"]}
+        },
+        {
+          "if": {"properties": {"type": {"const": "eligibility"}}},
+          "then": {"required": ["decision"]}
+        }
+      ]
+    }
+  }
+}

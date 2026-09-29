@@ -1,0 +1,37 @@
+# Synthetic report field registry — decisioning-expression grammar v1.
+# Every `conditions[].field` must resolve here. All fields describe synthetic
+# report payloads only; nothing maps to a real bureau or carrier feed.
+version: 1
+fields:
+  # --- motor vehicle report (synthetic) ---
+  mvr.major_violations_3y:      {type: integer, minimum: 0}
+  mvr.minor_violations_3y:      {type: integer, minimum: 0}
+  mvr.dui_convictions_5y:       {type: integer, minimum: 0}
+  mvr.at_fault_accidents_3y:    {type: integer, minimum: 0}
+  mvr.license_suspended:        {type: boolean}
+  # --- policy attributes ---
+  policy.state:                 {type: string, enum: [CA, TX, NY, FL, WA, AZ, OR, NV]}
+  policy.term_months:           {type: integer, enum: [6, 12]}
+  policy.prior_insurance_months: {type: integer, minimum: 0}
+  policy.coverage_limit_usd:    {type: number, minimum: 0}
+  policy.multi_policy:          {type: boolean}
+  # --- applicant attributes (synthetic scoring bands, no real credit data) ---
+  applicant.age:                {type: integer, minimum: 16, maximum: 120}
+  applicant.years_licensed:     {type: integer, minimum: 0}
+  applicant.synthetic_score_band: {type: string, enum: [A, B, C, D]}
+  # --- vehicle ---
+  vehicle.age_years:            {type: integer, minimum: 0}
+  vehicle.annual_mileage:       {type: integer, minimum: 0}
+  vehicle.safety_rating:        {type: integer, minimum: 1, maximum: 5}
+  vehicle.value_usd:            {type: number, minimum: 0}
+  vehicle.use:                  {type: string, enum: [commute, pleasure, business]}
+  # --- property ---
+  property.year_built:          {type: integer, minimum: 1800}
+  property.roof_age_years:      {type: integer, minimum: 0}
+  property.protection_class:    {type: integer, minimum: 1, maximum: 10}
+  property.wildfire_score:      {type: number, minimum: 0, maximum: 100}
+  property.distance_to_coast_mi: {type: number, minimum: 0}
+  # --- loss history (synthetic) ---
+  loss_history.claims_3y:       {type: integer, minimum: 0}
+  loss_history.claims_5y:       {type: integer, minimum: 0}
+  loss_history.total_paid_5y_usd: {type: number, minimum: 0}

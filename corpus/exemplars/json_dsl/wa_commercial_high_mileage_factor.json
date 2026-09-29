@@ -1,0 +1,15 @@
+{
+  "expression_id": "wa_commercial_high_mileage_factor",
+  "version": 1,
+  "jurisdiction": "WA",
+  "line": "commercial_auto",
+  "description": "Washington commercial-auto mileage factor: business use or high annual mileage raises the pricing factor.",
+  "condition_logic": "any",
+  "conditions": [
+    {"field": "vehicle.use", "op": "eq", "value": "business"},
+    {"field": "vehicle.annual_mileage", "op": "gt", "value": 50000}
+  ],
+  "effect": {"type": "pricing_factor", "factor": 1.10, "applies_to": "base_premium",
+             "reason": "HIGH_EXPOSURE_USE"},
+  "metadata": {"author": "hsp-seed", "source_refs": ["req:AZDO-10540"]}
+}

@@ -1,0 +1,14 @@
+{
+  "expression_id": "ca_auto_mvr_surcharge",
+  "version": 1,
+  "jurisdiction": "CA",
+  "line": "personal_auto",
+  "description": "MVR-based surcharge for California auto: one or more major violations in the last 3 years triggers a 25% base-premium surcharge.",
+  "conditions": [
+    {"field": "policy.state", "op": "eq", "value": "CA"},
+    {"field": "mvr.major_violations_3y", "op": "ge", "value": 1}
+  ],
+  "effect": {"type": "surcharge", "factor": 1.25, "applies_to": "base_premium",
+             "reason": "MVR_MAJOR_VIOLATION"},
+  "metadata": {"author": "hsp-seed", "source_refs": ["req:AZDO-10432", "reg:CA-DOI-2024-17"]}
+}

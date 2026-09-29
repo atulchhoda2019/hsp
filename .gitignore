@@ -1,0 +1,8 @@
+hs_err_pid*.log
+.venv/
+__pycache__/
+*.pyc
+*.egg-info/
+dist/
+.pytest_cache/
+.ruff_cache/

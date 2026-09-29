@@ -1,0 +1,15 @@
+{
+  "expression_id": "tx_auto_young_driver_surcharge",
+  "version": 1,
+  "jurisdiction": "TX",
+  "line": "personal_auto",
+  "description": "Texas young-driver surcharge: under 25 with fewer than 3 years licensed.",
+  "conditions": [
+    {"field": "policy.state", "op": "eq", "value": "TX"},
+    {"field": "applicant.age", "op": "lt", "value": 25},
+    {"field": "applicant.years_licensed", "op": "lt", "value": 3}
+  ],
+  "effect": {"type": "surcharge", "factor": 1.30, "applies_to": "base_premium",
+             "reason": "INEXPERIENCED_DRIVER"},
+  "metadata": {"author": "hsp-seed", "source_refs": ["req:AZDO-10440"]}
+}

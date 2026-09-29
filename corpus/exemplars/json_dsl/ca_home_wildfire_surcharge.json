@@ -1,0 +1,14 @@
+{
+  "expression_id": "ca_home_wildfire_surcharge",
+  "version": 2,
+  "jurisdiction": "CA",
+  "line": "homeowners",
+  "description": "California wildfire surcharge band: synthetic wildfire score above 60.",
+  "conditions": [
+    {"field": "policy.state", "op": "eq", "value": "CA"},
+    {"field": "property.wildfire_score", "op": "gt", "value": 60}
+  ],
+  "effect": {"type": "surcharge", "factor": 1.30, "applies_to": "peril_premium",
+             "reason": "WILDFIRE_HIGH"},
+  "metadata": {"author": "hsp-seed", "source_refs": ["req:AZDO-10512", "reg:CA-DOI-2025-03"]}
+}

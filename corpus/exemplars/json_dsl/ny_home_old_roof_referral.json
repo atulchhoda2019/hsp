@@ -1,0 +1,13 @@
+{
+  "expression_id": "ny_home_old_roof_referral",
+  "version": 1,
+  "jurisdiction": "NY",
+  "line": "homeowners",
+  "description": "New York roof-age referral: roofs older than 25 years route to manual underwriting.",
+  "conditions": [
+    {"field": "policy.state", "op": "eq", "value": "NY"},
+    {"field": "property.roof_age_years", "op": "gt", "value": 25}
+  ],
+  "effect": {"type": "eligibility", "decision": "REFERRAL", "reason": "ROOF_AGE_REVIEW"},
+  "metadata": {"author": "hsp-seed", "source_refs": ["req:AZDO-10520"]}
+}

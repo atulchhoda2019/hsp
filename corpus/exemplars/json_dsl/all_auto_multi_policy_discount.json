@@ -1,0 +1,13 @@
+{
+  "expression_id": "all_auto_multi_policy_discount",
+  "version": 1,
+  "jurisdiction": "ALL",
+  "line": "personal_auto",
+  "description": "Multi-policy discount: bundled policyholders receive 10% off policy premium.",
+  "conditions": [
+    {"field": "policy.multi_policy", "op": "eq", "value": true}
+  ],
+  "effect": {"type": "discount", "factor": 0.90, "applies_to": "policy_premium",
+             "reason": "MULTI_POLICY"},
+  "metadata": {"author": "hsp-seed", "source_refs": ["req:AZDO-10451"]}
+}

@@ -1,0 +1,13 @@
+{
+  "expression_id": "ca_auto_dui_ineligible",
+  "version": 1,
+  "jurisdiction": "CA",
+  "line": "personal_auto",
+  "description": "Synthetic eligibility rule: any DUI conviction within 5 years renders a California personal-auto applicant ineligible.",
+  "conditions": [
+    {"field": "policy.state", "op": "eq", "value": "CA"},
+    {"field": "mvr.dui_convictions_5y", "op": "ge", "value": 1}
+  ],
+  "effect": {"type": "eligibility", "decision": "INELIGIBLE", "reason": "DUI_WITHIN_5Y"},
+  "metadata": {"author": "hsp-seed", "source_refs": ["req:AZDO-10433", "reg:CA-DOI-2024-21"]}
+}

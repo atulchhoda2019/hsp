@@ -1,0 +1,14 @@
+{
+  "expression_id": "fl_home_coastal_surcharge",
+  "version": 1,
+  "jurisdiction": "FL",
+  "line": "homeowners",
+  "description": "Florida coastal surcharge: properties within 5 miles of the coast.",
+  "conditions": [
+    {"field": "policy.state", "op": "eq", "value": "FL"},
+    {"field": "property.distance_to_coast_mi", "op": "lt", "value": 5}
+  ],
+  "effect": {"type": "surcharge", "factor": 1.15, "applies_to": "peril_premium",
+             "reason": "COASTAL_EXPOSURE"},
+  "metadata": {"author": "hsp-seed", "source_refs": ["req:AZDO-10501", "reg:FL-OIR-2023-08"]}
+}
