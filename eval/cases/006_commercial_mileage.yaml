@@ -1,0 +1,13 @@
+id: commercial_mileage
+requirement: "Washington commercial auto: vehicles used for business or driven over 50000 miles per year get a 10 percent pricing factor increase."
+source_refs: [req:EVAL-006]
+expect:
+  jurisdiction: WA
+  line: commercial_auto
+  effect_type: pricing_factor
+  golden:
+    - report: {vehicle: {use: business, annual_mileage: 10000}}
+      matched: true
+      effect_factor: 1.1
+    - report: {vehicle: {use: commute, annual_mileage: 8000}}
+      matched: false

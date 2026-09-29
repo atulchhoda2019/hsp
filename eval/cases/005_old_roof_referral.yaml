@@ -1,0 +1,13 @@
+id: old_roof_referral
+requirement: "New York homeowners policies where the roof is older than 25 years should be referred for manual review."
+source_refs: [req:EVAL-005]
+expect:
+  jurisdiction: NY
+  line: homeowners
+  effect_type: eligibility
+  must_have_fields: [property.roof_age_years]
+  golden:
+    - report: {policy: {state: NY}, property: {roof_age_years: 30}}
+      matched: true
+    - report: {policy: {state: NY}, property: {roof_age_years: 10}}
+      matched: false

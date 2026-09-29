@@ -1,0 +1,16 @@
+id: ca_mvr_surcharge
+requirement: "California personal auto policies with at least one major MVR violation in the past 3 years get a 25 percent surcharge on base premium."
+source_refs: [req:EVAL-001]
+expect:
+  jurisdiction: CA
+  line: personal_auto
+  effect_type: surcharge
+  must_have_fields: [mvr.major_violations_3y]
+  golden:
+    - report: {policy: {state: CA}, mvr: {major_violations_3y: 2}}
+      matched: true
+      effect_factor: 1.25
+    - report: {policy: {state: CA}, mvr: {major_violations_3y: 0}}
+      matched: false
+    - report: {policy: {state: TX}, mvr: {major_violations_3y: 2}}
+      matched: false

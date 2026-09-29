@@ -1,0 +1,13 @@
+id: dui_ineligible
+requirement: "Any applicant with a DUI conviction within the last five years is ineligible for personal auto coverage in CA."
+source_refs: [req:EVAL-002]
+expect:
+  jurisdiction: CA
+  line: personal_auto
+  effect_type: eligibility
+  must_have_fields: [mvr.dui_convictions_5y]
+  golden:
+    - report: {policy: {state: CA}, mvr: {dui_convictions_5y: 1}}
+      matched: true
+    - report: {policy: {state: CA}, mvr: {dui_convictions_5y: 0}}
+      matched: false

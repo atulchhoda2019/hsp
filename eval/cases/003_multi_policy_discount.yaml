@@ -1,0 +1,14 @@
+id: multi_policy_discount
+requirement: "Bundled policyholders in all states receive a ten percent discount on the policy premium for personal auto."
+source_refs: [req:EVAL-003]
+expect:
+  jurisdiction: ALL
+  line: personal_auto
+  effect_type: discount
+  must_have_fields: [policy.multi_policy]
+  golden:
+    - report: {policy: {state: TX, multi_policy: true}}
+      matched: true
+      effect_factor: 0.9
+    - report: {policy: {state: TX, multi_policy: false}}
+      matched: false

@@ -3,6 +3,7 @@ from pathlib import Path
 
 import pytest
 
+from hsp.corpus.store import Corpus
 from hsp.grammars.json_dsl import JsonDslGrammar
 
 EXEMPLARS = Path(__file__).parent.parent / "corpus" / "exemplars" / "json_dsl"
@@ -11,6 +12,11 @@ EXEMPLARS = Path(__file__).parent.parent / "corpus" / "exemplars" / "json_dsl"
 @pytest.fixture(scope="session")
 def grammar() -> JsonDslGrammar:
     return JsonDslGrammar()
+
+
+@pytest.fixture(scope="session")
+def exemplar_corpus() -> Corpus:
+    return Corpus.load(EXEMPLARS)
 
 
 @pytest.fixture(scope="session")

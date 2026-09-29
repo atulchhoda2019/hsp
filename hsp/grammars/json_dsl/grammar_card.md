@@ -12,13 +12,15 @@ surcharge, discount, eligibility or pricing-factor decision applies.
   "jurisdiction": "CA",                    // 2-letter state or "ALL"
   "line": "personal_auto",                 // personal_auto | homeowners | renters | commercial_auto
   "condition_logic": "all",                // all | any (default all)
-  "conditions": [ { "field": "mvr.major_violations_3y", "op": ">=", "value": 1 } ],
+  "conditions": [ { "field": "mvr.major_violations_3y", "op": "ge", "value": 1 } ],
   "effect": { "type": "surcharge", "factor": 1.25, "applies_to": "base_premium" },
   "metadata": { "source_refs": ["req:...", "reg:..."] }
 }
 ```
 
 ## Operators
+
+IMPORTANT: ops are lowercase words, never symbols — `ge` not `>=`, `eq` not `==`.
 
 `eq ne lt le gt ge` (scalar value) · `in not_in` (array value) ·
 `between` ([lo, hi], inclusive) · `exists not_exists` (no value)

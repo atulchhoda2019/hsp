@@ -1,0 +1,14 @@
+id: wildfire_surcharge
+requirement: "California homeowners with a wildfire score above 60 receive a 30 percent surcharge on the peril premium."
+source_refs: [req:EVAL-004, reg:CA-DOI-2025-03]
+expect:
+  jurisdiction: CA
+  line: homeowners
+  effect_type: surcharge
+  must_have_fields: [property.wildfire_score]
+  golden:
+    - report: {policy: {state: CA}, property: {wildfire_score: 75}}
+      matched: true
+      effect_factor: 1.3
+    - report: {policy: {state: CA}, property: {wildfire_score: 20}}
+      matched: false
