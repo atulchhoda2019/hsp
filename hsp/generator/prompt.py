@@ -19,7 +19,8 @@ SYSTEM = (
 
 
 def build_prompt(intent: Intent, exemplars: list[Exemplar],
-                 grammar_card: str, source_refs: list[str]) -> str:
+                 grammar_card: str, source_refs: list[str],
+                 refs_key: str | None = "metadata.source_refs") -> str:
     parts = [grammar_card, "\n## Exemplars (existing production artifacts)\n"]
     for ex in exemplars:
         parts.append(f"### {ex.id}\n{ex.text}\n")
@@ -34,8 +35,8 @@ def build_prompt(intent: Intent, exemplars: list[Exemplar],
     parts.append(f"Detected intent (advisory): {detected}\n")
     if intent.ambiguities:
         parts.append(f"Ambiguities to resolve conservatively: {intent.ambiguities}\n")
-    if source_refs:
-        parts.append(f"metadata.source_refs must include: {source_refs}\n")
+    if source_refs and refs_key:
+        parts.append(f"{refs_key} must include: {source_refs}\n")
     parts.append("Output the artifact JSON only — no prose, no markdown.")
     return "\n".join(parts)
 

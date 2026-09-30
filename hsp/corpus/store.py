@@ -26,10 +26,13 @@ class Exemplar:
     artifact: dict
     digest: str
     tokens: set[str]
+    fmt: str = "json"
 
     @property
     def text(self) -> str:
-        return json.dumps(self.artifact, indent=2)
+        import yaml
+        return (yaml.safe_dump(self.artifact, sort_keys=False)
+                if self.fmt == "yaml" else json.dumps(self.artifact, indent=2))
 
 
 def _digest(artifact: dict) -> str:
@@ -43,15 +46,21 @@ class Corpus:
 
     @classmethod
     def load(cls, directory: str | Path) -> "Corpus":
+        import yaml
         items = []
-        for path in sorted(Path(directory).glob("*.json")):
-            art = json.loads(path.read_text())
-            hay = json.dumps(art) + " " + art.get("description", "")
+        paths = sorted(Path(directory).glob("*.json")) + \
+            sorted(Path(directory).glob("*.yaml")) + \
+            sorted(Path(directory).glob("*.yml"))
+        for path in paths:
+            art = (json.loads(path.read_text()) if path.suffix == ".json"
+                   else yaml.safe_load(path.read_text()))
+            hay = json.dumps(art) + " " + str(art.get("description", ""))
             items.append(Exemplar(
-                id=art.get("expression_id", path.stem),
+                id=art.get("expression_id") or art.get("ruleset_id") or path.stem,
                 artifact=art,
                 digest=_digest(art),
                 tokens=set(_TOKEN.findall(hay.lower())),
+                fmt="yaml" if path.suffix in (".yaml", ".yml") else "json",
             ))
         return cls(items)
 
@@ -61,10 +70,12 @@ class Corpus:
 
         scored = []
         for ex in self.exemplars:
-            if intent.line and ex.artifact.get("line") != intent.line:
+            if "line" in ex.artifact and intent.line and \
+                    ex.artifact.get("line") != intent.line:
                 continue
             jur = ex.artifact.get("jurisdiction")
-            if intent.jurisdiction and jur not in (intent.jurisdiction, "ALL"):
+            if "jurisdiction" in ex.artifact and intent.jurisdiction and \
+                    jur not in (intent.jurisdiction, "ALL"):
                 continue
             score = len(query & ex.tokens)
             if ex.artifact.get("effect", {}).get("type") == intent.effect_type:

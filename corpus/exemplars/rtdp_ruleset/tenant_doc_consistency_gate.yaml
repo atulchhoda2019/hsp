@@ -1,0 +1,20 @@
+ruleset_id: tenant_doc_consistency_gate
+version: 1
+owner_scope: tenant
+requires:
+  - signal: claim.narrative_consistency
+    contract: "1.0.0"
+    alias: narrative
+    optional: false
+evaluation: all_match
+rules:
+  - id: inconsistent_narrative_review
+    when: "signals.narrative.consistency < cfg.consistency_floor"
+    outcome: {decision: REVIEW, reason: NARRATIVE_INCONSISTENT}
+    requires_signals: [narrative]
+  - id: provider_velocity_decline
+    when: "features.provider_claim_count_1h > cfg.provider_velocity_limit"
+    outcome: {decision: DECLINE, reason: PROVIDER_VELOCITY}
+    requires_signals: []
+default_outcome: APPROVE
+missing_required_signal_outcome: REVIEW

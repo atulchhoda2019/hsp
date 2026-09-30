@@ -1,0 +1,16 @@
+ruleset_id: tenant_premium_sanity_gate
+version: 1
+owner_scope: tenant
+requires:
+  - signal: pricing.premium_estimate
+    contract: "1.0.0"
+    alias: premium
+    optional: true
+evaluation: all_match
+rules:
+  - id: premium_outlier_review
+    when: "signals.premium.premium > cfg.premium_outlier_usd"
+    outcome: {decision: REVIEW, reason: PREMIUM_OUTLIER}
+    requires_signals: [premium]
+default_outcome: APPROVE
+missing_required_signal_outcome: REVIEW

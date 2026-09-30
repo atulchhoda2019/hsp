@@ -7,14 +7,13 @@ produces a REJECTED bundle — never an unvalidated artifact.
 
 from __future__ import annotations
 
-import json
 from dataclasses import dataclass
 from datetime import datetime, timezone
 from pathlib import Path
 
 from hsp.corpus.store import Corpus
 from hsp.core.plugin import GrammarPlugin
-from hsp.generator.extract import extract_json
+
 from hsp.generator.prompt import SYSTEM, build_prompt, build_repair_prompt
 from hsp.intake.intent import normalize
 from hsp.packager.bundle import Bundle, Provenance
@@ -34,7 +33,8 @@ def generate(requirement: str, *, plugin: GrammarPlugin, corpus: Corpus,
     intent = normalize(requirement)
     exemplars = corpus.retrieve(intent, k=exemplar_k)
     refs = source_refs or []
-    prompt = build_prompt(intent, exemplars, plugin.grammar_card(), refs)
+    prompt = build_prompt(intent, exemplars, plugin.grammar_card(), refs,
+                          refs_key=plugin.source_refs_key)
 
     repair_notes: list[str] = []
     report = None
@@ -48,7 +48,7 @@ def generate(requirement: str, *, plugin: GrammarPlugin, corpus: Corpus,
                                    temperature=0.0 if attempt == 1 else 0.2)
         provider_meta = {**provider_meta, "provider": result.provider,
                          "model": result.model, "model_digest": result.model_digest}
-        raw = extract_json(result.text)
+        raw = plugin.extract_artifact(result.text)
         if raw is None:
             repair_notes.append(f"attempt {attempt}: no JSON object in response")
             report = None
@@ -57,10 +57,10 @@ def generate(requirement: str, *, plugin: GrammarPlugin, corpus: Corpus,
                 _empty_report(plugin, "no_json_object"))
             continue
         try:
-            artifact = json.loads(raw)
-        except json.JSONDecodeError:
+            artifact = plugin.parse(raw)
+        except Exception:
             report = None
-            repair_notes.append(f"attempt {attempt}: unparsable JSON")
+            repair_notes.append(f"attempt {attempt}: unparsable artifact")
             continue
         report = plugin.validate(raw)
         if report.ok:
@@ -77,7 +77,7 @@ def generate(requirement: str, *, plugin: GrammarPlugin, corpus: Corpus,
 
     bundle = Bundle(
         artifact=artifact or {},
-        digest=GrammarPlugin.digest(raw) if ok else "",
+        digest=plugin.digest(raw) if ok else "",
         grammar_id=plugin.grammar_id,
         grammar_version=plugin.grammar_version,
         status="PROPOSED" if ok else "REJECTED",
@@ -94,6 +94,7 @@ def generate(requirement: str, *, plugin: GrammarPlugin, corpus: Corpus,
             created_at=datetime.now(timezone.utc).isoformat(),
         ),
         validation=report,
+        artifact_format=plugin.artifact_format,
     )
     bundle_dir = bundle.write(out_dir) if out_dir else None
     return GenerationResult(bundle=bundle, bundle_dir=bundle_dir)

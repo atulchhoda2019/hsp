@@ -10,10 +10,13 @@ from pathlib import Path
 from hsp.corpus.store import Corpus
 from hsp.core.report import Status, ValidationReport
 from hsp.grammars.json_dsl import JsonDslGrammar
+from hsp.grammars.rtdp_ruleset import RtdpRulesetGrammar
 from hsp.provider.base import Provider
 
-_PLUGINS = {"decisioning-expression": JsonDslGrammar}
-_DEFAULT_CORPUS = "corpus/exemplars/json_dsl"
+_PLUGINS = {"decisioning-expression": JsonDslGrammar,
+            "rtdp-ruleset": RtdpRulesetGrammar}
+_DEFAULT_CORPUS = {"decisioning-expression": "corpus/exemplars/json_dsl",
+                   "rtdp-ruleset": "corpus/exemplars/rtdp_ruleset"}
 
 
 def _print_report(path: str, report: ValidationReport) -> None:
@@ -49,7 +52,8 @@ def main() -> int:
     g = sub.add_parser("generate")
     g.add_argument("requirement")
     g.add_argument("--grammar", default="decisioning-expression")
-    g.add_argument("--corpus", type=Path, default=Path(_DEFAULT_CORPUS))
+    g.add_argument("--corpus", type=Path, default=None,
+                   help="exemplar dir (default: per-grammar corpus)")
     g.add_argument("--model", default=None)
     g.add_argument("--provider", default="ollama")
     g.add_argument("--refs", nargs="*", default=[], help="source_refs e.g. req:AZDO-1")
@@ -58,8 +62,9 @@ def main() -> int:
 
     e = sub.add_parser("eval")
     e.add_argument("--grammar", default="decisioning-expression")
-    e.add_argument("--cases", type=Path, default=Path("eval/cases"))
-    e.add_argument("--corpus", type=Path, default=Path(_DEFAULT_CORPUS))
+    e.add_argument("--cases", type=Path, default=None,
+                   help="cases dir (default: eval/cases[_rtdp] by grammar)")
+    e.add_argument("--corpus", type=Path, default=None)
     e.add_argument("--model", default=None)
     e.add_argument("--provider", default="ollama")
 
@@ -68,9 +73,10 @@ def main() -> int:
 
     if args.cmd == "generate":
         from hsp.pipeline import generate
+        corpus_dir = args.corpus or Path(_DEFAULT_CORPUS[plugin.grammar_id])
         res = generate(
             args.requirement, plugin=plugin,
-            corpus=Corpus.load(args.corpus),
+            corpus=Corpus.load(corpus_dir),
             provider=_provider(args.provider, args.model),
             source_refs=args.refs, max_attempts=args.max_attempts,
             out_dir=args.out)
@@ -84,8 +90,12 @@ def main() -> int:
 
     if args.cmd == "eval":
         from hsp.eval.harness import run_cases
-        rep = run_cases(args.cases, plugin=plugin,
-                        corpus=Corpus.load(args.corpus),
+        cases_dir = args.cases or Path(
+            "eval/cases_rtdp" if plugin.grammar_id == "rtdp-ruleset"
+            else "eval/cases")
+        corpus_dir = args.corpus or Path(_DEFAULT_CORPUS[plugin.grammar_id])
+        rep = run_cases(cases_dir, plugin=plugin,
+                        corpus=Corpus.load(corpus_dir),
                         provider=_provider(args.provider, args.model))
         for c in rep.cases:
             print(f"{'PASS' if c.valid and c.structural_match else 'FAIL'} {c.case_id} "

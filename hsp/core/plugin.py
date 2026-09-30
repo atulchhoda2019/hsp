@@ -25,6 +25,10 @@ from .report import ValidationReport
 class GrammarPlugin(ABC):
     grammar_id: str
     grammar_version: str
+    artifact_format: str = "json"   # "json" | "yaml" — bundle file extension
+    # dot path for source_refs inside the artifact, or None when the grammar
+    # has no metadata channel (refs still land in bundle provenance)
+    source_refs_key: str | None = "metadata.source_refs"
 
     @abstractmethod
     def grammar_card(self) -> str:
@@ -41,10 +45,17 @@ class GrammarPlugin(ABC):
         Returns {"matched": bool, "effect": dict | None}.
         """
 
-    @staticmethod
-    def digest(artifact: str) -> str:
-        """Canonical sha256 over normalized JSON — the pin used in manifests."""
-        canonical = json.dumps(
-            json.loads(artifact), sort_keys=True, separators=(",", ":")
-        )
+    def extract_artifact(self, text: str) -> str | None:
+        """Pull the artifact document out of raw LLM output. Default: JSON."""
+        from hsp.generator.extract import extract_json
+        return extract_json(text)
+
+    def digest(self, artifact: str) -> str:
+        """Canonical sha256 over the parsed artifact — the pin in manifests."""
+        parsed = self.parse(artifact)
+        canonical = json.dumps(parsed, sort_keys=True, separators=(",", ":"))
         return "sha256:" + hashlib.sha256(canonical.encode()).hexdigest()
+
+    def parse(self, artifact: str) -> Any:
+        """Artifact text → dict. Override for non-JSON grammars."""
+        return json.loads(artifact)

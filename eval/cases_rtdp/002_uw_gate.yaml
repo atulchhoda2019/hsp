@@ -1,0 +1,22 @@
+id: uw_gate
+requirement: "Tenant underwriting ruleset: refer applications when eligibility probability falls below 0.4, decline when claimant's 24-hour amount sum exceeds 500000. Missing eligibility signal means review."
+expect:
+  golden:
+    - report:
+        features: {claimant_amount_sum_24h: 1000}
+        signals: {elig: {probability: 0.3}}
+        present_signals: [elig]
+        cfg: {review_floor: 0.4, amount_decline_limit: 500000}
+      decision: REVIEW
+    - report:
+        features: {claimant_amount_sum_24h: 600000}
+        signals: {elig: {probability: 0.9}}
+        present_signals: [elig]
+        cfg: {review_floor: 0.4, amount_decline_limit: 500000}
+      decision: DECLINE
+    - report:
+        features: {claimant_amount_sum_24h: 1000}
+        signals: {}
+        present_signals: []
+        cfg: {review_floor: 0.4, amount_decline_limit: 500000}
+      decision: REVIEW

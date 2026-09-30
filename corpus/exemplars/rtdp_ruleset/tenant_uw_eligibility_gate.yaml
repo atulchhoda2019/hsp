@@ -1,0 +1,20 @@
+ruleset_id: tenant_uw_eligibility_gate
+version: 1
+owner_scope: tenant
+requires:
+  - signal: underwriting.eligibility_probability
+    contract: "1.0.0"
+    alias: elig
+    optional: false
+evaluation: all_match
+rules:
+  - id: low_eligibility_review
+    when: "signals.elig.probability < cfg.review_floor"
+    outcome: {decision: REVIEW, reason: LOW_ELIGIBILITY}
+    requires_signals: [elig]
+  - id: amount_decline
+    when: "features.claimant_amount_sum_24h > cfg.amount_decline_limit"
+    outcome: {decision: DECLINE, reason: AMOUNT_LIMIT}
+    requires_signals: []
+default_outcome: APPROVE
+missing_required_signal_outcome: REVIEW

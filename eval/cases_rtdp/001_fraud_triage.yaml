@@ -1,0 +1,29 @@
+id: fraud_triage
+requirement: "Write a tenant ruleset for claim decisioning: decline when the fraud probability signal is at or above 0.9, review between 0.6 and 0.9, and decline outright when the claimant filed more than 10 claims in the last hour. If the fraud signal is unavailable, review."
+expect:
+  must_have_fields: []
+  golden:
+    - report:
+        features: {claimant_claim_count_1h: 2}
+        signals: {fraud: {probability: 0.95}}
+        present_signals: [fraud]
+        cfg: {decline_probability: 0.9, review_probability: 0.6, velocity_decline_count: 10}
+      decision: DECLINE
+    - report:
+        features: {claimant_claim_count_1h: 2}
+        signals: {fraud: {probability: 0.7}}
+        present_signals: [fraud]
+        cfg: {decline_probability: 0.9, review_probability: 0.6, velocity_decline_count: 10}
+      decision: REVIEW
+    - report:
+        features: {claimant_claim_count_1h: 2}
+        signals: {fraud: {probability: 0.1}}
+        present_signals: [fraud]
+        cfg: {decline_probability: 0.9, review_probability: 0.6, velocity_decline_count: 10}
+      decision: APPROVE
+    - report:
+        features: {claimant_claim_count_1h: 15}
+        signals: {fraud: {probability: 0.1}}
+        present_signals: [fraud]
+        cfg: {decline_probability: 0.9, review_probability: 0.6, velocity_decline_count: 10}
+      decision: DECLINE

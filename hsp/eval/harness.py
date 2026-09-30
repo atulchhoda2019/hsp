@@ -85,9 +85,12 @@ def _run_case(case: dict, *, plugin, corpus, provider) -> CaseResult:
         for g in exp.get("golden", []):
             golden_total += 1
             out = plugin.evaluate(art, g["report"])
-            ok = out["matched"] == g.get("matched", True)
-            if ok and "effect_factor" in g and out["effect"]:
-                ok = out["effect"].get("factor") == g["effect_factor"]
+            if "decision" in g:
+                ok = out.get("decision") == g["decision"]
+            else:
+                ok = out["matched"] == g.get("matched", True)
+                if ok and "effect_factor" in g and out["effect"]:
+                    ok = out["effect"].get("factor") == g["effect_factor"]
             golden_pass += ok
 
     return CaseResult(

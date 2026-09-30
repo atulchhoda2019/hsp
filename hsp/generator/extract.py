@@ -46,3 +46,27 @@ def extract_json(text: str) -> str | None:
         return candidate
     except json.JSONDecodeError:
         return None
+
+
+_YAML_FENCE = re.compile(r"```(?:yaml|yml)?\s*(.*?)```", re.DOTALL)
+
+
+def extract_yaml(text: str) -> str | None:
+    """Extract a YAML document from raw LLM output (fenced or bare)."""
+    import yaml
+    text = text.strip()
+    candidates = []
+    m = _YAML_FENCE.search(text)
+    if m:
+        candidates.append(m.group(1).strip())
+    candidates.append(text)
+    for cand in candidates:
+        if not cand:
+            continue
+        try:
+            doc = yaml.safe_load(cand)
+        except yaml.YAMLError:
+            continue
+        if isinstance(doc, dict) and doc.get("ruleset_id"):
+            return cand
+    return None

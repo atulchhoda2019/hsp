@@ -42,11 +42,16 @@ class Bundle:
     status: str  # PROPOSED | REJECTED
     provenance: Provenance
     validation: ValidationReport
+    artifact_format: str = "json"
 
     def write(self, out_dir: str | Path) -> Path:
+        import yaml
         out = Path(out_dir)
         out.mkdir(parents=True, exist_ok=True)
-        (out / "artifact.json").write_text(json.dumps(self.artifact, indent=2) + "\n")
+        ext = "yaml" if self.artifact_format == "yaml" else "json"
+        text = (yaml.safe_dump(self.artifact, sort_keys=False)
+                if ext == "yaml" else json.dumps(self.artifact, indent=2) + "\n")
+        (out / f"artifact.{ext}").write_text(text)
         (out / "manifest.json").write_text(json.dumps({
             "artifact_digest": self.digest,
             "grammar": {"id": self.grammar_id, "version": self.grammar_version},
