@@ -79,6 +79,16 @@ class RtdpRulesetGrammar(GrammarPlugin):
         from importlib import resources
         return resources.files(_PKG).joinpath("grammar_card.md").read_text()
 
+    def field_index(self) -> str:
+        lines = ["Registered contracts: " +
+                 ", ".join(f"{n}@{sorted(v)}" for n, v in sorted(self._contracts.items())),
+                 "Signal fields: " +
+                 "; ".join(
+                     f"{n} -> {sorted(v[next(iter(v))].get('value_schema', {}))}"
+                     for n, v in sorted(self._contracts.items())),
+                 "Registered features: " + ", ".join(sorted(self._features))]
+        return "\n".join(lines)
+
     def extract_artifact(self, text: str) -> str | None:
         from hsp.generator.extract import extract_yaml
         return extract_yaml(text)

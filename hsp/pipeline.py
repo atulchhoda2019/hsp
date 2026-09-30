@@ -34,7 +34,8 @@ def generate(requirement: str, *, plugin: GrammarPlugin, corpus: Corpus,
     exemplars = corpus.retrieve(intent, k=exemplar_k)
     refs = source_refs or []
     prompt = build_prompt(intent, exemplars, plugin.grammar_card(), refs,
-                          refs_key=plugin.source_refs_key)
+                          refs_key=plugin.source_refs_key,
+                          field_index=plugin.field_index())
 
     repair_notes: list[str] = []
     report = None

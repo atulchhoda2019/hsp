@@ -6,7 +6,7 @@ from tests.conftest import dumps
 
 
 def test_all_exemplars_pass_tier1(grammar, exemplars):
-    assert len(exemplars) == 10
+    assert len(exemplars) == 14
     for name, text in exemplars.items():
         report = grammar.validate(text)
         assert report.tiers[0].status.value == "pass", f"{name}: {report.tiers[0].issues}"

@@ -1,0 +1,13 @@
+{
+  "expression_id": "ba_dep_low_confidence_review",
+  "version": 1,
+  "jurisdiction": "ALL",
+  "line": "benefits_admin",
+  "description": "Route to human review when extraction confidence is low — skewed scans, phone photos, handwritten fields.",
+  "conditions": [
+    {"field": "document.type", "op": "in", "value": ["birth_certificate", "proof_of_insurance"]},
+    {"field": "document.min_field_confidence", "op": "lt", "value": 0.8}
+  ],
+  "effect": {"type": "eligibility", "decision": "REFERRAL", "reason": "LOW_EXTRACTION_CONFIDENCE"},
+  "metadata": {"author": "hsp-seed", "source_refs": ["req:DEMO-DV-2"]}
+}

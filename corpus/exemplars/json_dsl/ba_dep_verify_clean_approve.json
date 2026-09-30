@@ -1,0 +1,18 @@
+{
+  "expression_id": "ba_dep_verify_clean_approve",
+  "version": 1,
+  "jurisdiction": "ALL",
+  "line": "benefits_admin",
+  "description": "Auto-approve dependent verification when extraction is confident and all document checks pass: parent matches employee, DOB valid, registration number format ok, not a duplicate.",
+  "conditions": [
+    {"field": "document.type", "op": "eq", "value": "birth_certificate"},
+    {"field": "document.min_field_confidence", "op": "ge", "value": 0.8},
+    {"field": "dependent.parent_match_score", "op": "ge", "value": 85},
+    {"field": "dependent.dob_in_future", "op": "eq", "value": false},
+    {"field": "dependent.missing_fields", "op": "eq", "value": 0},
+    {"field": "dependent.is_duplicate", "op": "eq", "value": false},
+    {"field": "dependent.reg_number_valid", "op": "eq", "value": true}
+  ],
+  "effect": {"type": "eligibility", "decision": "ELIGIBLE", "reason": "ALL_CHECKS_PASS"},
+  "metadata": {"author": "hsp-seed", "source_refs": ["req:DEMO-DV-1"]}
+}

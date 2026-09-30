@@ -2,7 +2,7 @@ from hsp.intake.intent import normalize
 
 
 def test_loads_and_digests(exemplar_corpus):
-    assert len(exemplar_corpus.exemplars) == 10
+    assert len(exemplar_corpus.exemplars) == 14
     assert all(e.digest.startswith("sha256:") for e in exemplar_corpus.exemplars)
 
 

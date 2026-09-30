@@ -35,3 +35,16 @@ fields:
   loss_history.claims_3y:       {type: integer, minimum: 0}
   loss_history.claims_5y:       {type: integer, minimum: 0}
   loss_history.total_paid_5y_usd: {type: number, minimum: 0}
+  # --- benefits_admin: document extraction outputs (synthetic) ---
+  document.type:              {type: string, enum: [birth_certificate, pharmacy_receipt, proof_of_insurance]}
+  document.country:           {type: string, enum: [US, IN, MX, PR]}
+  document.min_field_confidence: {type: number, minimum: 0, maximum: 1}
+  dependent.parent_match_score: {type: number, minimum: 0, maximum: 100}
+  dependent.dob_in_future:    {type: boolean}
+  dependent.missing_fields:   {type: integer, minimum: 0}
+  dependent.is_duplicate:     {type: boolean}
+  dependent.reg_number_valid: {type: boolean}
+  receipt.has_eligible_subtotal: {type: boolean}
+  receipt.eligible_subtotal_usd: {type: number, minimum: 0}
+  receipt.total_usd:          {type: number, minimum: 0}
+  receipt.unknown_lines:      {type: integer, minimum: 0}

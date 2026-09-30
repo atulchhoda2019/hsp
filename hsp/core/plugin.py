@@ -34,6 +34,11 @@ class GrammarPlugin(ABC):
     def grammar_card(self) -> str:
         """Compact grammar spec injected into the generator prompt."""
 
+    def field_index(self) -> str | None:
+        """Compact symbol index (fields/signals) to inject into the prompt —
+        stops the model inventing near-synonym field names."""
+        return None
+
     @abstractmethod
     def validate(self, artifact: str) -> ValidationReport:
         """Run all validation tiers over raw artifact text."""

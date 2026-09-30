@@ -40,6 +40,10 @@ class JsonDslGrammar(GrammarPlugin):
     def grammar_card(self) -> str:
         return _load_resource("grammar_card.md")
 
+    def field_index(self) -> str:
+        return "Only these fields exist (name:type):\n" + "\n".join(
+            f"  {name}:{spec['type']}" for name, spec in sorted(self._fields.items()))
+
     def evaluate(self, artifact: str | dict[str, Any], case: dict[str, Any]) -> dict[str, Any]:
         expr = json.loads(artifact) if isinstance(artifact, str) else artifact
         return _evaluate(expr, case)
@@ -51,12 +55,12 @@ class JsonDslGrammar(GrammarPlugin):
         if parsed is None:
             report.tiers.append(TierResult(2, "compile", Status.SKIP))
             report.tiers.append(TierResult(3, "resolve", Status.SKIP))
+            report.tiers.append(TierResult(5, "policy", Status.SKIP))
             return report
-        plan, tier2 = self._tier_compile(parsed)
+        _plan_ok, tier2 = self._tier_compile(parsed)
         report.tiers.append(tier2)
-        report.tiers.append(
-            self._tier_resolve(parsed) if plan else TierResult(3, "resolve", Status.SKIP)
-        )
+        report.tiers.append(self._tier_resolve(parsed))
+        report.tiers.append(self._tier_policy(parsed))
         return report
 
     # --- tier 1: schema -----------------------------------------------------
@@ -180,6 +184,7 @@ class JsonDslGrammar(GrammarPlugin):
         "commercial_auto": ("mvr.", "vehicle.", "policy.", "applicant.", "loss_history."),
         "homeowners": ("property.", "policy.", "applicant.", "loss_history."),
         "renters": ("property.", "policy.", "applicant.", "loss_history."),
+        "benefits_admin": ("document.", "dependent.", "receipt.", "policy."),
     }
 
     def _check_line(self, cond: dict[str, Any], line: str, path: str) -> list[Issue]:
@@ -188,3 +193,18 @@ class JsonDslGrammar(GrammarPlugin):
                           f"field {cond['field']!r} has no namespace in line {line!r}",
                           path)]
         return []
+
+    # --- tier 5: policy/guardrail --------------------------------------------
+    def _tier_policy(self, expr: dict[str, Any]) -> TierResult:
+        issues: list[Issue] = []
+        if expr["line"] == "benefits_admin":
+            eff = expr.get("effect", {})
+            if eff.get("type") == "eligibility" and eff.get("decision") == "INELIGIBLE":
+                # AI may approve or refer — never reject. Anything not approved
+                # routes to human_review (REFERRAL). See docs/design.md.
+                issues.append(Issue(
+                    "ai_never_rejects",
+                    "benefits_admin artifacts may not emit INELIGIBLE — use "
+                    "REFERRAL (human_review)", "effect"))
+        return TierResult(5, "policy",
+                          Status.FAIL if issues else Status.PASS, issues)

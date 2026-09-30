@@ -3,18 +3,22 @@
 from tests.conftest import dumps
 
 
+def _tier(report, n):
+    return next(t for t in report.tiers if t.tier == n)
+
+
 def _errors(report, tier):
-    return [i.code for i in report.tiers[tier - 1].errors]
+    return [i.code for i in _tier(report, tier).errors]
 
 
 def _warnings(report, tier):
-    return [i.code for i in report.tiers[tier - 1].warnings]
+    return [i.code for i in _tier(report, tier).warnings]
 
 
 def test_clean_artifact_passes_all_tiers(grammar, artifact):
     report = grammar.validate(dumps(artifact))
     assert report.ok
-    assert [t.status.value for t in report.tiers] == ["pass", "pass", "pass"]
+    assert [t.status.value for t in report.tiers] == ["pass"] * 4
 
 
 def test_tier2_between_inverted(grammar, artifact):
@@ -66,6 +70,29 @@ def test_tier3_jurisdiction_mismatch(grammar, artifact):
 def test_tier3_line_field_scope(grammar, artifact):
     artifact["conditions"][1] = {"field": "property.wildfire_score", "op": "gt",
                                  "value": 60}
+    report = grammar.validate(dumps(artifact))
+    assert "field_not_in_line" in _errors(report, 3)
+
+
+def test_tier5_ai_never_rejects(grammar, artifact):
+    artifact["line"] = "benefits_admin"
+    artifact["jurisdiction"] = "ALL"
+    artifact["conditions"] = [
+        {"field": "document.min_field_confidence", "op": "lt", "value": 0.5}]
+    artifact["effect"] = {"type": "eligibility", "decision": "INELIGIBLE"}
+    report = grammar.validate(dumps(artifact))
+    assert not report.ok
+    assert "ai_never_rejects" in _errors(report, 5)
+    # REFERRAL is the legal alternative
+    artifact["effect"]["decision"] = "REFERRAL"
+    assert grammar.validate(dumps(artifact)).ok
+
+
+def test_benefits_line_rejects_insurance_fields(grammar, artifact):
+    artifact["line"] = "benefits_admin"
+    artifact["conditions"] = [
+        {"field": "mvr.major_violations_3y", "op": "ge", "value": 1}]
+    artifact["effect"] = {"type": "eligibility", "decision": "REFERRAL"}
     report = grammar.validate(dumps(artifact))
     assert "field_not_in_line" in _errors(report, 3)
 

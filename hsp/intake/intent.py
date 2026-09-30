@@ -21,13 +21,27 @@ _LINE_HINTS = {
     "commercial_auto": ["commercial auto", "fleet", "commercial vehicle"],
     "homeowners": ["homeowner", "home", "house", "dwelling", "property"],
     "renters": ["renters", "tenant"],
+    "benefits_admin": ["dependent", "birth certificate", "receipt", "hsa",
+                       "fsa", "benefits", "proof of insurance", "verification",
+                       "pharmacy"],
+}
+
+_FIELD_HINTS_BA = {
+    r"confidence": "document.min_field_confidence",
+    r"parent.*match|name.*match": "dependent.parent_match_score",
+    r"duplicate": "dependent.is_duplicate",
+    r"registration number": "dependent.reg_number_valid",
+    r"missing field": "dependent.missing_fields",
+    r"future": "dependent.dob_in_future",
+    r"unknown|unclassifi|lexicon": "receipt.unknown_lines",
+    r"eligible subtotal": "receipt.eligible_subtotal_usd",
 }
 
 _EFFECT_HINTS = {
     "surcharge": ["surcharge", "increase premium", "penalty"],
     "discount": ["discount", "credit", "reduce premium"],
     "eligibility": ["eligible", "ineligible", "eligibility", "decline", "referral",
-                    "refer"],
+                    "refer", "approve", "review"],
     "pricing_factor": ["pricing factor", "rate factor"],
 }
 
@@ -74,12 +88,19 @@ def normalize(requirement: str) -> Intent:
     elif len(states) > 1:
         intent.ambiguities.append(f"multiple jurisdictions: {sorted(states)}")
 
-    matches = [line for line, hints in _LINE_HINTS.items()
-               if any(h in lower for h in hints)]
+    scores = {
+        line: sum(1 for h in hints
+                  if re.search(rf"\b{re.escape(h)}\b", lower))
+        for line, hints in _LINE_HINTS.items()
+    }
+    best = max(scores.values())
+    matches = [line for line, s in scores.items() if s == best and s > 0]
     if "commercial_auto" in matches:
         intent.line = "commercial_auto"
-    elif matches:
+    elif len(matches) == 1:
         intent.line = matches[0]
+    elif len(matches) > 1:
+        intent.ambiguities.append(f"line ambiguous between {matches}")
     if intent.line is None:
         intent.ambiguities.append("line of business not detected")
 
@@ -90,7 +111,7 @@ def normalize(requirement: str) -> Intent:
     if intent.effect_type is None:
         intent.ambiguities.append("effect type not detected")
 
-    for pat, fname in _FIELD_HINTS.items():
+    for pat, fname in {**_FIELD_HINTS, **_FIELD_HINTS_BA}.items():
         if re.search(pat, lower) and fname not in intent.field_hints:
             intent.field_hints.append(fname)
 

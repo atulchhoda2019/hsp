@@ -20,10 +20,15 @@ SYSTEM = (
 
 def build_prompt(intent: Intent, exemplars: list[Exemplar],
                  grammar_card: str, source_refs: list[str],
-                 refs_key: str | None = "metadata.source_refs") -> str:
+                 refs_key: str | None = "metadata.source_refs",
+                 field_index: str | None = None) -> str:
     parts = [grammar_card, "\n## Exemplars (existing production artifacts)\n"]
     for ex in exemplars:
         parts.append(f"### {ex.id}\n{ex.text}\n")
+    if field_index:
+        parts.append("\n## Symbol registry\n")
+        parts.append(field_index + "\n")
+        parts.append("Do NOT invent names — copy them exactly from the registry.\n")
     parts.append("## Task\n")
     parts.append(f"Requirement: {intent.requirement}\n")
     detected = {

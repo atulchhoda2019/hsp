@@ -1,0 +1,14 @@
+{
+  "expression_id": "ba_receipt_unknown_lines_review",
+  "version": 1,
+  "jurisdiction": "ALL",
+  "line": "benefits_admin",
+  "description": "Receipts with line items the eligibility lexicon cannot classify go to human review with the lines pre-flagged.",
+  "conditions": [
+    {"field": "document.type", "op": "eq", "value": "pharmacy_receipt"},
+    {"field": "receipt.has_eligible_subtotal", "op": "eq", "value": false},
+    {"field": "receipt.unknown_lines", "op": "gt", "value": 0}
+  ],
+  "effect": {"type": "eligibility", "decision": "REFERRAL", "reason": "UNCLASSIFIED_LINES"},
+  "metadata": {"author": "hsp-seed", "source_refs": ["req:DEMO-RC-2"]}
+}

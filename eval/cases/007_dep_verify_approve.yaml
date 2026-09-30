@@ -1,0 +1,16 @@
+id: dep_verify_approve
+requirement: "Auto-approve a dependent verification when the document is a birth certificate, extraction confidence is at least 0.8, the parent name matches the employee at 85 or higher, no required fields are missing, the document is not a duplicate, the registration number is valid, and the date of birth is not in the future."
+expect:
+  jurisdiction: ALL
+  line: benefits_admin
+  effect_type: eligibility
+  must_have_fields: [document.type, document.min_field_confidence, dependent.parent_match_score, dependent.is_duplicate]
+  golden:
+    - report:
+        document: {type: birth_certificate, min_field_confidence: 0.92}
+        dependent: {parent_match_score: 91, dob_in_future: false, missing_fields: 0, is_duplicate: false, reg_number_valid: true}
+      matched: true
+    - report:
+        document: {type: birth_certificate, min_field_confidence: 0.92}
+        dependent: {parent_match_score: 40, dob_in_future: false, missing_fields: 0, is_duplicate: false, reg_number_valid: true}
+      matched: false

@@ -1,0 +1,12 @@
+id: dep_low_confidence_review
+requirement: "Route dependent documents to human review when the minimum extraction field confidence falls below 0.8 — blurry scans and phone photos."
+expect:
+  jurisdiction: ALL
+  line: benefits_admin
+  effect_type: eligibility
+  must_have_fields: [document.min_field_confidence]
+  golden:
+    - report: {document: {type: birth_certificate, min_field_confidence: 0.55}}
+      matched: true
+    - report: {document: {type: birth_certificate, min_field_confidence: 0.95}}
+      matched: false

@@ -19,7 +19,7 @@
     },
     "line": {
       "type": "string",
-      "enum": ["personal_auto", "homeowners", "renters", "commercial_auto"]
+      "enum": ["personal_auto", "homeowners", "renters", "commercial_auto", "benefits_admin"]
     },
     "description": {"type": "string", "maxLength": 500},
     "condition_logic": {

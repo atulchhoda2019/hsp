@@ -10,7 +10,7 @@ surcharge, discount, eligibility or pricing-factor decision applies.
   "expression_id": "snake_case_id",       // required
   "version": 1,                            // integer >= 1
   "jurisdiction": "CA",                    // 2-letter state or "ALL"
-  "line": "personal_auto",                 // personal_auto | homeowners | renters | commercial_auto
+  "line": "personal_auto",                 // personal_auto | homeowners | renters | commercial_auto | benefits_admin
   "condition_logic": "all",                // all | any (default all)
   "conditions": [ { "field": "mvr.major_violations_3y", "op": "ge", "value": 1 } ],
   "effect": { "type": "surcharge", "factor": 1.25, "applies_to": "base_premium" },
@@ -36,9 +36,17 @@ IMPORTANT: ops are lowercase words, never symbols — `ge` not `>=`, `eq` not `=
 ## Fields
 
 `conditions[].field` must come from the report registry — dotted paths:
-`mvr.* policy.* applicant.* vehicle.* property.* loss_history.*`.
+`mvr.* policy.* applicant.* vehicle.* property.* loss_history.*` for insurance
+lines; `document.* dependent.* receipt.*` for `benefits_admin`.
 Use only fields valid for the expression's `line`; auto lines may not use
-`property.*`, property lines may not use `mvr.*` / `vehicle.*`.
+`property.*`, property lines may not use `mvr.*` / `vehicle.*`,
+benefits_admin may not use bureau/vehicle/property fields.
+
+## benefits_admin guardrail
+
+For `line: benefits_admin`, the effect is `eligibility` with
+`decision: ELIGIBLE` (auto-approve) or `REFERRAL` (human review).
+`INELIGIBLE` is banned — the system never auto-rejects.
 
 ## Rules
 

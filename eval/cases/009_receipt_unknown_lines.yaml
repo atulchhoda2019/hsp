@@ -1,0 +1,16 @@
+id: receipt_unknown_lines
+requirement: "Pharmacy receipts without a printed eligible subtotal that contain line items the classifier cannot decide must go to human review."
+expect:
+  jurisdiction: ALL
+  line: benefits_admin
+  effect_type: eligibility
+  must_have_fields: [receipt.unknown_lines]
+  golden:
+    - report:
+        document: {type: pharmacy_receipt}
+        receipt: {has_eligible_subtotal: false, unknown_lines: 3}
+      matched: true
+    - report:
+        document: {type: pharmacy_receipt}
+        receipt: {has_eligible_subtotal: true, unknown_lines: 0}
+      matched: false

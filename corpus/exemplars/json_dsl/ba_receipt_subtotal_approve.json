@@ -1,0 +1,14 @@
+{
+  "expression_id": "ba_receipt_subtotal_approve",
+  "version": 1,
+  "jurisdiction": "ALL",
+  "line": "benefits_admin",
+  "description": "Approve HSA/FSA receipt when the store printed an eligible subtotal — trust the retailer line over line-item classification.",
+  "conditions": [
+    {"field": "document.type", "op": "eq", "value": "pharmacy_receipt"},
+    {"field": "receipt.has_eligible_subtotal", "op": "eq", "value": true},
+    {"field": "receipt.eligible_subtotal_usd", "op": "gt", "value": 0}
+  ],
+  "effect": {"type": "eligibility", "decision": "ELIGIBLE", "reason": "PRINTED_ELIGIBLE_SUBTOTAL"},
+  "metadata": {"author": "hsp-seed", "source_refs": ["req:DEMO-RC-1"]}
+}
